@@ -8,3 +8,5 @@ The project has not yet started.
 - 2026-11-21: Mockup B (Open plan) chosen. `docs/spec.md` has a "Chosen look" section and its Layout, Dashboard, Pipeline and design tokens now follow B. Reasons for the choice still to be added.
 - 2026-11-21: Reason for choosing B recorded (cleaner look and feel). Sample data raised to about 60 deals and 200 activities in `docs/spec.md` and `docs/intent.md`, so the 12-month charts have wins in most months.
 - 2026-11-21: Mockup B updated to match the spec (no dashboard search box or chart switch, 60-deal figures, 10 recent activities) and its screenshots retaken.
+- 2026-11-21: `docs/plan.md` written: files that change, 10 phases (0 to 9) with a commit each, risks ranked (pipeline drag and drop first), and the unit and end-to-end tests that prove each requirement. No code yet.
+- 2026-11-21: Two contradictions in `docs/spec.md` fixed: card moves use `before_id` only (Board ordering), and REQ-75 describes the stage blocks from mockup B instead of a stacked bar.

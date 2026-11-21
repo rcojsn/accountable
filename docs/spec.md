@@ -111,7 +111,7 @@ Every delete asks first, in a dialog that names the record and says what happens
 - **REQ-72** Line chart: revenue won per month for the last 12 months, ending with the current month, by close date of Won deals.
 - **REQ-73** Bar chart: deals won per month over the same 12 months, with deals lost beside them for comparison.
 - **REQ-74** Pipeline visual: the sales funnel (concern 5), one band per stage from New to Won, showing value and deal count at each.
-- **REQ-75** Open pipeline by stage: value and expected revenue for each open stage, as a stacked horizontal bar.
+- **REQ-75** Open pipeline by stage: value, number of deals and expected revenue for each open stage, as colored blocks side by side, each as wide as its share of the open value.
 - **REQ-76** Follow-ups: overdue, today, and next 7 days, each with the activity, the contact or deal (linked), the date, and a checkbox to mark it done. A count of later follow-ups.
 - **REQ-77** Recent activity: the 10 latest activities that have happened (when it happened is now or earlier), including stage changes, each linking to its contact or deal.
 - **REQ-78** Every figure matches the data and updates after any change elsewhere (for example a deal won on the pipeline, or a new follow-up), without restarting.
@@ -244,7 +244,7 @@ The deletion rules REQ-30 to REQ-32 come from these foreign keys. Deleting an or
 
 ### Board ordering
 
-Each deal has a `position` within its stage. Moving a card sends `{stage, index}` where `index` is its place among the cards in the target column as the board shows it. The server, in one transaction, takes the card out of its old column, puts it at that place in the new column, and renumbers both columns 0, 1, 2… The Won and Lost columns hide older deals, so the server places the card relative to the visible card it was dropped before (`before_id`), or at the end. At 1,000 deals renumbering a column is cheap and keeps the order exact.
+Each deal has a `position` within its stage. Moving a card sends `{stage, before_id}`, where `before_id` is the card it was dropped just above, or `null` when it was dropped at the bottom of the column. The server, in one transaction, takes the card out of its old column, puts it just before `before_id` in the new column (or at the end), and renumbers both columns 0, 1, 2… Placing it by a neighbouring card rather than by a count keeps the order right in the Won and Lost columns, where older deals are hidden from the board. At 1,000 deals renumbering a column is cheap and keeps the order exact.
 
 ### API
 
