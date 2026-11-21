@@ -1,0 +1,19 @@
+{
+  "name": "accountable",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": ["frontend"],
+  "scripts": {
+    "dev": "node scripts/dev.mjs",
+    "seed": "uv run python -m accountable.seed",
+    "test": "node scripts/test.mjs",
+    "test:web": "npm run test --workspace frontend",
+    "test:api": "uv run pytest",
+    "test:e2e": "playwright test --config e2e/playwright.config.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.50.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  }
+}
