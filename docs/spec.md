@@ -118,7 +118,7 @@ Every delete asks first, in a dialog that names the record and says what happens
 
 ### Sample data
 
-- **REQ-80** About 15 organizations across at least 6 industries, 40 contacts at every status, 30 deals at every stage, and 80 activities, all fictional. Deal values are realistic in rand, roughly R25,000 to R2,500,000.
+- **REQ-80** About 15 organizations across at least 6 industries, 40 contacts at every status, 60 deals at every stage, and about 200 activities (stage-change entries included), all fictional. Enough deals are won to show wins in most months of the 12-month charts. Deal values are realistic in rand, roughly R25,000 to R2,500,000.
 - **REQ-81** Dates relative to the day the data is created: deals won and lost across the last 12 months (so every month on the charts has data, most with some wins), deals expected to close in the coming months, at least 3 late deals, at least 4 overdue follow-ups and at least 4 due in the next 7 days, and at least 3 Won and 2 Lost in the last 30 days so those columns aren't empty.
 - **REQ-82** Every deal past New has stage-change entries that tell a believable path to its current stage, so timelines and the funnel make sense.
 - **REQ-83** The seed is deterministic (fixed random seed), so tests can rely on it, apart from the dates moving with today.
@@ -272,30 +272,41 @@ JSON everywhere, dates as `YYYY-MM-DD`, datetimes as ISO 8601 local time, money 
 
 The pipeline uses `GET /api/deals` and works out its columns, filters and totals in the browser, so they update the moment a card moves (REQ-63). The rules shared by both sides (stage probabilities, late, the 30-day window, expected revenue) live in `backend/accountable/rules.py` and `frontend/src/lib/rules.ts`, with matching unit tests on both sides.
 
+### Chosen look: mockup B, Open plan
+
+Chosen on 2026-11-21 from the three mockups in `docs/mockups/`. The build follows `docs/mockups/b-open-plan/` (`dashboard.png`, `pipeline.png` and their HTML) as the visual reference; where the mockup and this spec differ, this spec wins.
+
+- **Why B:** it has a cleaner look and feel than the other two.
+- **What B means for the build:** a light, airy look with plenty of white space; a white floating sidebar instead of a dark one; a serif headline on the dashboard; a large revenue chart as the dashboard's centrepiece; full-width colored stage blocks as the pipeline visual; and plain pipeline columns under white header cards, not columns tinted in their stage color.
+- **Updated after the choice:** the mockup no longer has the "Search records" box in the dashboard header (the MVP has no search across all records, only each table's own search) or the "Revenue / Deals" switch on the revenue chart (deals won already have their own bar chart). Its sidebar counts, funnel and recent activity now fit the 60-deal sample data and show the 10 latest activities. Its figures are still examples; the app shows the real data.
+
 ### Screens
 
 #### Layout
 
-- A fixed left sidebar, 232 px wide, in Midnight with Sea Mist text: the Accountable wordmark at the top, then Dashboard, Pipeline, Deals, Contacts, Organizations, each with an icon. The current page has a Sea Green pill behind it with Midnight text.
-- The main area has the page background `#F0F4F5`, a page title in Instrument Sans 28 px semibold, and the page's main action on the right of the title ("New deal", "New contact"…).
-- Content sits in white panels with 16 px rounded corners, no outline, 24 px padding, and at most a very soft shadow. No one-edge borders and no rule along the top of the page.
-- A quiet footer line: "All amounts in South African rand (ZAR)."
+- A white floating sidebar, 220 px wide, set 16 px in from the page edges, with 20 px rounded corners and no outline. At the top, the Accountable wordmark beside a round Midnight mark with a Sea Green letter. Then Dashboard and Pipeline, a small "Records" label, then Deals, Contacts and Organizations, each with an icon and its record count on the right in JetBrains Mono (Pipeline shows the number of open deals). The current page has a pale Sea Green background (`rgba(6,214,160,.16)`), Midnight text and a dark green icon; the others are muted. At the bottom, a tinted note: "All amounts in South African rand (ZAR)".
+- The main area has the page background `#F0F4F5`. Each page has a small muted line above its title (the date on the dashboard, a hint on the pipeline) and the page's main action on the right ("New deal", "New contact"…).
+- Primary buttons are Midnight pills with white text and a Sea Green icon. Secondary buttons are white pills.
+- Content sits in white panels with 20 px rounded corners, no outline, 26 px padding and no shadow (cards on the pipeline have a very soft one). No one-edge borders and no rule along the top of the page.
 
 #### Dashboard
 
 A 12-column grid, top to bottom:
 
-1. **Headline figures**: six tiles in one row. Each has a short label ("Open pipeline", "Expected revenue", "Won this month", "Deals won this month", "Late deals", "Overdue follow-ups") and a large figure in JetBrains Mono. Late deals and overdue follow-ups show their figure in Raspberry when above zero, and link to the Deals table and the follow-ups panel.
-2. **Revenue won** (8 columns): line chart over 12 months, Sea Green line with a soft fill under it, dots on each month, a tooltip with the month, revenue and deal count. **Pipeline by stage** (4 columns): one stacked horizontal bar of open value by stage in the stage colors, with a legend listing each stage's value and expected revenue.
-3. **Deals won and lost** (6 columns): bar chart, Sea Green bars for won and slate bars for lost, side by side for each month. **Sales funnel** (6 columns): bands narrowing from New to Won, each band in its stage color with its value and deal count, and the conversion rate from the band above in small text.
-4. **Follow-ups** (6 columns): grouped as Overdue, Today, Next 7 days. Each row: a checkbox, the description, the contact or deal it's on, and the date (Raspberry when overdue). "12 more later" at the bottom. **Recent activity** (6 columns): the latest 10, each with a type icon, the description, the record it's on, and a relative time ("2 hours ago").
+1. **Headline**: the date in small muted text, then one sentence in Instrument Serif at 42 px built from the live figures: "R2.5 million expected from *18 open deals*", with the deal count in italic dark green. "New deal" on the right.
+2. **Revenue won** (12 columns): a wide panel. On the left, revenue won over the last 12 months as a large figure, "22 deals won · 11 lost" beneath it, then "Won this month" with its revenue and number of deals. On the right, the line chart: a Midnight line with Sea Green dots on each month and a very light fill under it. Hovering a month shows a Midnight tooltip above the chart with the month, revenue and deal count, joined to the point by a dashed line.
+3. **Headline figures** (four tiles of 3 columns): Open pipeline (with the number of open deals), Expected revenue, Late deals and Overdue follow-ups ("2 more due today" beneath). Each has a label, a round icon chip on the right and a 28 px figure in JetBrains Mono. Late deals and overdue follow-ups turn Raspberry, icon chip included, when above zero, and link to the Deals table and the follow-ups panel.
+4. **Open pipeline by stage** (12 columns): four solid blocks side by side, one per open stage in its stage color, each as wide as its share of open value (with a minimum width so a small stage stays readable). Each block shows the stage name, its number of deals, its value in large JetBrains Mono and "Expected R410,000 at 25%". Negotiation uses `#0E6F90` so its white text is readable.
+5. **Sales funnel** (7 columns): one row per stage from New to Won: a stage dot and name, a rounded bar on a pale track filled in the stage color in proportion to the value, the value, and the number of deals. Between rows, a small "↓ 75% moved on". **Deals won and lost** (5 columns): grouped bars per month, Sea Green for won and slate for lost, with rounded tops.
+6. **Follow-ups** (7 columns): grouped under "Overdue · 4" (in Raspberry), "Today · 2" and "Next 7 days · 3", with "12 more later" in the panel's header. Each follow-up is a pale tinted row with a round checkbox, the description, "Deal · Warehouse automation" or "Contact · Thandi Mokoena" beneath, its type icon, and a date chip: Raspberry with white text when overdue, Marigold when due today, white otherwise. **Recent activity** (5 columns): the latest 10 as a vertical timeline of small ringed dots joined by a soft line. Each entry shows the description (or, for a stage change, the two stage badges with an arrow), "Call · Lerato Khumalo" beneath, and the time in JetBrains Mono ("2 hours ago", "18 Nov 10:05"). A stage change's dot takes the new stage's color.
 
 #### Pipeline
 
-- The board header shows "Open pipeline R1,240,000 · Expected R512,500".
-- Six columns side by side, scrolling sideways below 1280 px. Each column is a rounded panel tinted lightly with its stage color, with a header showing a stage dot, the stage name, the deal count, total value and expected revenue, and an "Add deal" button. Won and Lost headers add "Last 30 days".
-- Cards are white, rounded, with the deal name in semibold, the organization, the value in JetBrains Mono, the close date and the main contact's name. A late card shows a Raspberry "Late" badge and its close date in Raspberry. No colored edge stripe.
-- While dragging, the card tilts slightly and lifts with a shadow, and a placeholder shows where it will land. Totals update on drop.
+- The header: the hint "Drag a card to change its stage or its place" above the title, and on the right a white pill holding Open deals, Open pipeline and Expected revenue (in dark green), followed by "New deal".
+- Six columns side by side, scrolling sideways below 1280 px. Columns have no background of their own; cards sit on the page background.
+- Each column starts with a white header card: the stage name in a solid pill in its stage color, the number of deals, and a round "+" button that adds a deal at that stage. Below that, the column's total value in 18 px JetBrains Mono, "Expected" with its expected revenue, and a thin meter filled to the stage's probability in the stage color. Won and Lost show "Closed in the last 30 days" instead of the expected revenue and meter.
+- Cards are white with 14 px rounded corners. Top line: the organization, small and muted (cut short with an ellipsis if long), with a Raspberry "Late" badge on the right when late. Then the deal name in semibold; the value in JetBrains Mono with the deal's probability on the right; the close date with a calendar icon (a clock icon, in Raspberry, when late); and the main contact's initials in a circle tinted with the stage color, beside their name. No colored edge stripe.
+- While dragging, the card lifts with a deeper shadow and a slight tilt, and a placeholder shows where it will land. Totals and meters update on drop.
 
 #### Tables
 
@@ -327,8 +338,10 @@ A 12-column grid, top to bottom:
 | `--panel` | `#FFFFFF` | panels and cards |
 | `--ink` | `#073B4C` Midnight | text |
 | `--ink-muted` | `#4F6B75` | secondary text (5.1:1 on the page background) |
-| `--sidebar` | `#073B4C` with `#CDD8DB` Sea Mist text | navigation |
-| `--green` | `#06D6A0` Sea Green, Midnight text | primary buttons, New stage, won revenue |
+| `--sidebar` | `#FFFFFF`, muted items in `--ink-muted` | navigation panel |
+| `--nav-active` | `rgba(6,214,160,.16)` with Midnight text and a `--green-text` icon | current page in the sidebar |
+| `--button` | `#073B4C` Midnight, white text, Sea Green icon | primary buttons |
+| `--green` | `#06D6A0` Sea Green, Midnight text | New stage, won revenue, chart dots, button icons |
 | `--green-text` | `#05795A` | green text on light backgrounds |
 | `--marigold` | `#FFC145`, Midnight text | Qualified stage |
 | `--marigold-text` | `#8A5A00` | marigold text on light backgrounds |

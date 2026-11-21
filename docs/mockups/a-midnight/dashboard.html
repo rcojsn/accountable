@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup A Dashboard</title>
+<link rel="stylesheet" href="../shared/tokens.css">
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../shared/data.js"></script>
+<script src="../shared/charts.js"></script>
+</head>
+<body>
+<aside class="side"><div class="side-inner">
+  <div class="brand"><span class="mark">A</span>Accountable</div>
+  <nav class="nav">
+    <a class="on" href="dashboard.html"><i data-lucide="layout-dashboard"></i>Dashboard</a>
+    <a href="pipeline.html"><i data-lucide="kanban"></i>Pipeline</a>
+    <a href="#"><i data-lucide="handshake"></i>Deals</a>
+    <a href="#"><i data-lucide="users"></i>Contacts</a>
+    <a href="#"><i data-lucide="building-2"></i>Organizations</a>
+  </nav>
+  <div class="foot">All amounts in South African rand (ZAR)</div></div>
+</aside>
+
+<main>
+  <div class="head">
+    <div>
+      <h1>Dashboard</h1>
+      <div class="sub" id="today"></div>
+    </div>
+    <a class="btn" href="#"><i data-lucide="plus"></i>New deal</a>
+  </div>
+
+  <div class="grid">
+    <div class="panel kpi s2"><div class="label"><i data-lucide="layers"></i>Open pipeline</div><div class="fig" id="k-open"></div><div class="note">18 open deals</div></div>
+    <div class="panel kpi s2"><div class="label"><i data-lucide="target"></i>Expected revenue</div><div class="fig" id="k-exp"></div><div class="note">Value × probability</div></div>
+    <div class="panel kpi s2"><div class="label"><i data-lucide="trophy"></i>Won this month</div><div class="fig" id="k-won"></div><div class="note">November so far</div></div>
+    <div class="panel kpi s2"><div class="label"><i data-lucide="circle-check"></i>Deals won</div><div class="fig">1</div><div class="note">November so far</div></div>
+    <div class="panel kpi s2 alert"><div class="label"><i data-lucide="clock-alert"></i>Late deals</div><div class="fig">3</div><div class="note">Past their close date</div></div>
+    <div class="panel kpi s2 alert"><div class="label"><i data-lucide="bell-ring"></i>Overdue follow-ups</div><div class="fig">4</div><div class="note">2 more due today</div></div>
+
+    <section class="panel s8">
+      <div class="ph"><h2>Revenue won</h2><span class="meta">Last 12 months · <b class="mono" style="color:var(--ink)">R5,250,000</b></span></div>
+      <div id="line"></div>
+    </section>
+
+    <section class="panel s4">
+      <div class="ph"><h2>Open pipeline by stage</h2></div>
+      <div class="stack" id="stack"></div>
+      <div class="stage-rows" id="stage-rows"></div>
+      <div class="total-row"><span>Expected revenue</span><span class="mono" id="exp2"></span></div>
+    </section>
+
+    <section class="panel s6">
+      <div class="ph"><h2>Deals won and lost</h2>
+        <div class="legend"><span><i style="background:var(--green)"></i>Won</span><span><i style="background:var(--lost)"></i>Lost</span></div>
+      </div>
+      <div id="bars"></div>
+    </section>
+
+    <section class="panel s6">
+      <div class="ph"><h2>Sales funnel</h2><span class="meta">Deals created in the last 12 months</span></div>
+      <div class="funnel" id="funnel"></div>
+    </section>
+
+    <section class="panel s6">
+      <div class="ph"><h2>Follow-ups</h2><span class="meta">Overdue and next 7 days</span></div>
+      <div id="fus"></div>
+      <a class="more" href="#">12 more later</a>
+    </section>
+
+    <section class="panel s6">
+      <div class="ph"><h2>Recent activity</h2><a class="meta" href="#">View all</a></div>
+      <div id="recent"></div>
+    </section>
+  </div>
+</main>
+
+<script>
+  const { money, short, stage, columnTotals, lineChart, barChart, typeIcon } = MK;
+  const M = MOCK;
+  document.getElementById('today').textContent = M.today;
+  document.getElementById('k-open').textContent = money(M.kpis.openValue);
+  document.getElementById('k-exp').textContent = money(M.kpis.expected);
+  document.getElementById('k-won').textContent = money(M.kpis.wonMonth);
+  document.getElementById('exp2').textContent = money(M.kpis.expected);
+
+  lineChart(document.getElementById('line'), { values: M.revenue, labels: M.months, color: '#06D6A0', height: 270, highlightLast: true });
+  barChart(document.getElementById('bars'), { labels: M.months, height: 230, series: [{ values: M.won, color: '#06D6A0' }, { values: M.lost, color: '#8FA3AA' }] });
+
+  const open = ['new', 'qualified', 'proposal', 'negotiation'].map(k => ({ s: stage(k), ...columnTotals(k) }));
+  document.getElementById('stack').innerHTML = open.map(o => `<span style="flex:${o.value};background:${o.s.fill}"></span>`).join('');
+  document.getElementById('stage-rows').innerHTML = open.map(o => `
+    <div class="stage-row">
+      <span class="n"><i style="background:${o.s.fill}"></i>${o.s.name}</span><span class="v">${money(o.value)}</span>
+      <span class="d">${o.count} deals · ${o.s.prob}%</span><span class="e">exp. ${money(o.expected)}</span>
+    </div>`).join('');
+
+  const fmax = M.funnel[0].value;
+  document.getElementById('funnel').innerHTML = M.funnel.map((f, i) => {
+    const s = stage(f.stage);
+    const conv = i ? Math.round(f.deals / M.funnel[i - 1].deals * 100) + '%' : '';
+    const fill = f.stage === 'negotiation' ? s.badge : s.fill;
+    return `<div class="fband">
+      <div class="fbar" style="width:${Math.max(36, f.value / fmax * 100)}%;background:${fill};color:${s.on}">
+        <span>${s.name} · ${f.deals}</span><span class="mono">${short(f.value)}</span></div>
+      <span class="conv">${conv ? '↓ ' + conv : ''}</span></div>`;
+  }).join('');
+
+  const fuRow = (f, late) => `
+    <div class="fu"><span class="check"></span>
+      <div><div class="t">${f.text}</div><div class="on"><i data-lucide="${f.kind === 'deal' ? 'handshake' : 'user'}"></i>${f.on}</div></div>
+      <span class="date ${late ? 'late' : ''}">${f.date}</span></div>`;
+  document.getElementById('fus').innerHTML = `
+    <div class="fu-group"><div class="fu-h overdue">Overdue <span class="count">4</span></div>${M.followups.overdue.map(f => fuRow(f, true)).join('')}</div>
+    <div class="fu-group"><div class="fu-h">Today <span class="count">2</span></div>${M.followups.today.map(f => fuRow(f)).join('')}</div>
+    <div class="fu-group"><div class="fu-h">Next 7 days <span class="count">3</span></div>${M.followups.week.map(f => fuRow(f)).join('')}</div>`;
+
+  document.getElementById('recent').innerHTML = M.recent.map(a => {
+    let text = a.text;
+    if (a.type === 'stage') {
+      const f = stage(a.from), t = stage(a.to);
+      text = `Moved <span class="badge" style="background:${f.badge};color:${f.badgeOn}">${f.name}</span> → <span class="badge" style="background:${t.badge};color:${t.badgeOn}">${t.name}</span>`;
+    }
+    return `<div class="act"><span class="ic"><i data-lucide="${typeIcon(a.type)}"></i></span>
+      <div><div class="t">${text}</div><div class="on">on ${a.on}</div></div><span class="when">${a.when}</span></div>`;
+  }).join('');
+
+  lucide.createIcons();
+</script>
+</body>
+</html>

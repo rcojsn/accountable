@@ -40,7 +40,7 @@ To save a record, only these fields are required; everything else is optional:
 
 ### Sample data
 
-Accountable comes with realistic sample data, so every screen looks alive the first time it starts: organizations across several industries, contacts at every status, deals at every stage (including deals won and lost over the past months, deals expected to close in the months ahead and a few running late), and activities with some follow-ups due soon and some overdue. Roughly 15 organizations, 40 contacts, 30 deals and 80 activities, with fictional companies and people. The dates are set relative to the day the data is created, so the sample data never looks stale and there are always late deals and overdue follow-ups.
+Accountable comes with realistic sample data, so every screen looks alive the first time it starts: organizations across several industries, contacts at every status, deals at every stage (including deals won and lost over the past months, deals expected to close in the months ahead and a few running late), and activities with some follow-ups due soon and some overdue. Roughly 15 organizations, 40 contacts, 60 deals and 200 activities (stage-change entries included), with fictional companies and people. The dates are set relative to the day the data is created, so the sample data never looks stale and there are always late deals and overdue follow-ups.
 
 ### Look and feel
 

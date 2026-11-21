@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup C Dashboard</title>
+<link rel="stylesheet" href="../shared/tokens.css">
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../shared/data.js"></script>
+<script src="../shared/charts.js"></script>
+</head>
+<body>
+<nav class="rail">
+  <span class="mark">A</span>
+  <a class="on" href="dashboard.html" title="Dashboard"><i data-lucide="layout-dashboard"></i></a>
+  <a href="pipeline.html" title="Pipeline"><i data-lucide="kanban"></i></a>
+  <a href="#" title="Deals"><i data-lucide="handshake"></i></a>
+  <a href="#" title="Contacts"><i data-lucide="users"></i></a>
+  <a href="#" title="Organizations"><i data-lucide="building-2"></i></a>
+</nav>
+
+<main>
+  <div class="topbar">
+    <div class="crumbs"><h1>Dashboard</h1><span class="d" id="today"></span></div>
+    <div class="tools">
+      <div class="search"><i data-lucide="search"></i>Search<kbd>Ctrl K</kbd></div>
+      <a class="btn" href="#"><i data-lucide="plus"></i>New deal</a>
+    </div>
+  </div>
+
+  <section class="hero">
+    <div class="kpis">
+      <div class="k"><div class="l">Open pipeline</div><div class="v" id="k-open"></div><div class="n">18 open deals</div></div>
+      <div class="k"><div class="l">Expected revenue</div><div class="v" id="k-exp"></div><div class="n">Value × probability</div></div>
+      <div class="k"><div class="l">Won this month</div><div class="v" id="k-won"></div><div class="n">November so far</div></div>
+      <div class="k"><div class="l">Deals won</div><div class="v">1</div><div class="n">This month · <b>22</b> in 12 months</div></div>
+      <div class="k alert"><div class="l">Late deals</div><div class="v">3</div><div class="n">Past their close date</div></div>
+      <div class="k alert"><div class="l">Overdue follow-ups</div><div class="v">4</div><div class="n">2 more due today</div></div>
+    </div>
+    <div class="bar-h"><span>Open pipeline by stage</span><span>Amounts in South African rand (ZAR)</span></div>
+    <div class="segbar" id="segbar"></div>
+    <div class="seglab" id="seglab"></div>
+  </section>
+
+  <div class="grid">
+    <section class="panel s5">
+      <div class="ph"><h2>Revenue won</h2><span class="meta">Last 12 months</span></div>
+      <div class="big">R5,250,000</div>
+      <div id="line"></div>
+    </section>
+    <section class="panel s4">
+      <div class="ph"><h2>Deals won and lost</h2>
+        <div class="legend"><span><i style="background:var(--green)"></i>Won</span><span><i style="background:var(--lost)"></i>Lost</span></div>
+      </div>
+      <div class="big">22 <span style="font-size:14px;color:var(--ink-muted);font-weight:500">won · 11 lost</span></div>
+      <div id="bars"></div>
+    </section>
+    <section class="panel s3">
+      <div class="ph"><h2>Sales funnel</h2><span class="meta">12 months</span></div>
+      <div id="funnel"></div>
+    </section>
+
+    <section class="panel s8">
+      <div class="ph"><h2>Follow-ups</h2><a class="meta" href="#">12 more later</a></div>
+      <div class="lanes" id="lanes"></div>
+    </section>
+    <section class="panel s4">
+      <div class="ph"><h2>Recent activity</h2><a class="meta" href="#">View all</a></div>
+      <div class="feed" id="recent"></div>
+    </section>
+  </div>
+</main>
+
+<script>
+  const { money, short, stage, columnTotals, lineChart, barChart, typeIcon } = MK;
+  const M = MOCK;
+  document.getElementById('today').textContent = M.today;
+  document.getElementById('k-open').textContent = money(M.kpis.openValue);
+  document.getElementById('k-exp').textContent = money(M.kpis.expected);
+  document.getElementById('k-won').textContent = money(M.kpis.wonMonth);
+
+  const open = ['new', 'qualified', 'proposal', 'negotiation'].map(k => ({ s: stage(k), ...columnTotals(k) }));
+  document.getElementById('segbar').innerHTML = open.map(o =>
+    `<div style="flex:${o.value};background:${o.s.fill};color:${o.s.on}"><span>${o.s.name} · ${o.count}</span><span class="mono">${short(o.value)}</span></div>`).join('');
+  document.getElementById('seglab').innerHTML = open.map(o =>
+    `<div style="flex:${o.value}">exp. ${short(o.expected)} at ${o.s.prob}%</div>`).join('');
+
+  lineChart(document.getElementById('line'), { values: M.revenue, labels: M.months.map(m => m[0]), color: '#118AB2', fillOpacity: 0.1, height: 210, dots: false });
+  barChart(document.getElementById('bars'), { labels: M.months.map(m => m[0]), height: 210, radius: 3, series: [{ values: M.won, color: '#06D6A0' }, { values: M.lost, color: '#8FA3AA' }] });
+
+  // Vertical funnel as stacked trapezoids
+  (function () {
+    const el = document.getElementById('funnel'), W = el.clientWidth, bandH = 44, gap = 4;
+    const fmax = M.funnel[0].value;
+    let s = `<svg class="vfunnel" width="${W}" height="${M.funnel.length * (bandH + gap)}">`;
+    M.funnel.forEach((f, i) => {
+      const st = stage(f.stage);
+      const w1 = W * (0.42 + 0.58 * f.value / fmax);
+      const next = M.funnel[i + 1] ? M.funnel[i + 1].value : f.value * 0.85;
+      const w2 = W * (0.42 + 0.58 * next / fmax);
+      const y = i * (bandH + gap), x1 = (W - w1) / 2, x2 = (W - w2) / 2;
+      const fill = f.stage === 'negotiation' ? st.badge : st.fill;
+      s += `<path d="M${x1},${y} L${x1 + w1},${y} L${x2 + w2},${y + bandH} L${x2},${y + bandH} Z" fill="${fill}" stroke-linejoin="round"/>`;
+      s += `<text x="${W / 2}" y="${y + 19}" text-anchor="middle" fill="${st.on}">${st.name}</text>`;
+      s += `<text class="m" x="${W / 2}" y="${y + 34}" text-anchor="middle" fill="${st.on}">${short(f.value)} · ${f.deals}</text>`;
+    });
+    el.innerHTML = s + '</svg>';
+  })();
+
+  const fu = (f, late) => `<div class="fu"><div class="t">${f.text}</div><span class="check"></span>
+    <div class="on"><i data-lucide="${f.kind === 'deal' ? 'handshake' : 'user'}"></i>${f.on}</div><span class="date ${late ? 'late' : ''}">${f.date}</span></div>`;
+  document.getElementById('lanes').innerHTML = `
+    <div class="lane"><div class="lane-h" style="color:var(--raspberry-strong)"><i data-lucide="bell-ring" style="width:16px;height:16px"></i>Overdue<span class="c" style="background:var(--raspberry-strong);color:#fff">4</span></div>${M.followups.overdue.map(f => fu(f, true)).join('')}</div>
+    <div class="lane"><div class="lane-h" style="color:var(--marigold-text)"><i data-lucide="sun" style="width:16px;height:16px"></i>Today<span class="c" style="background:var(--marigold);color:var(--ink)">2</span></div>${M.followups.today.map(f => fu(f)).join('')}</div>
+    <div class="lane"><div class="lane-h" style="color:var(--cerulean-strong)"><i data-lucide="calendar-days" style="width:16px;height:16px"></i>Next 7 days<span class="c" style="background:var(--cerulean-strong);color:#fff">3</span></div>${M.followups.week.map(f => fu(f)).join('')}</div>`;
+
+  document.getElementById('recent').innerHTML = M.recent.slice(0, 7).map(a => {
+    let text = a.text, ic = `<span class="ic"><i data-lucide="${typeIcon(a.type)}"></i></span>`;
+    if (a.type === 'stage') {
+      const f = stage(a.from), t = stage(a.to);
+      text = `<span class="badge" style="background:${f.badge};color:${f.badgeOn}">${f.name}</span> → <span class="badge" style="background:${t.badge};color:${t.badgeOn}">${t.name}</span>`;
+      ic = `<span class="ic" style="background:${t.tint}"><i data-lucide="arrow-right-left"></i></span>`;
+    }
+    return `<div class="row">${ic}<div><div class="t">${text}</div><div class="s">${a.on} · ${a.when}</div></div></div>`;
+  }).join('');
+
+  lucide.createIcons();
+</script>
+</body>
+</html>

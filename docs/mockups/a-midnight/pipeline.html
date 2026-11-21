@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup A Pipeline</title>
+<link rel="stylesheet" href="../shared/tokens.css">
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../shared/data.js"></script>
+<script src="../shared/charts.js"></script>
+</head>
+<body>
+<aside class="side"><div class="side-inner">
+  <div class="brand"><span class="mark">A</span>Accountable</div>
+  <nav class="nav">
+    <a href="dashboard.html"><i data-lucide="layout-dashboard"></i>Dashboard</a>
+    <a class="on" href="pipeline.html"><i data-lucide="kanban"></i>Pipeline</a>
+    <a href="#"><i data-lucide="handshake"></i>Deals</a>
+    <a href="#"><i data-lucide="users"></i>Contacts</a>
+    <a href="#"><i data-lucide="building-2"></i>Organizations</a>
+  </nav>
+  <div class="foot">All amounts in South African rand (ZAR)</div></div>
+</aside>
+
+<main>
+  <div class="head">
+    <div>
+      <h1>Pipeline</h1>
+      <div class="sub">Drag a card to change its stage or its place</div>
+    </div>
+    <div class="summary">
+      <div class="item"><div class="l">Open deals</div><div class="v">18</div></div>
+      <div class="item"><div class="l">Open pipeline</div><div class="v" id="open"></div></div>
+      <div class="item"><div class="l">Expected revenue</div><div class="v" id="exp"></div></div>
+      <a class="btn" href="#"><i data-lucide="plus"></i>New deal</a>
+    </div>
+  </div>
+
+  <div class="board" id="board"></div>
+</main>
+
+<script>
+  const { money, stage, initials, columnTotals } = MK;
+  document.getElementById('open').textContent = money(MOCK.kpis.openValue);
+  document.getElementById('exp').textContent = money(MOCK.kpis.expected);
+
+  const card = (d, extra = '') => `
+    <div class="card ${extra}">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:start">
+        <div class="nm">${d.name}</div>${d.late ? '<span class="late-badge">Late</span>' : ''}</div>
+      <div class="org">${d.org}</div>
+      <div class="val">${money(d.value)}</div>
+      <div class="row"><span class="cd ${d.late ? "late" : ""}"><i data-lucide="calendar"></i>${d.close}</span>
+        <span class="who"><span class="av">${initials(d.contact)}</span>${d.contact}</span></div>
+    </div>`;
+
+  document.getElementById('board').innerHTML = MOCK.stages.map(s => {
+    const t = columnTotals(s.key);
+    const closed = s.key === 'won' || s.key === 'lost';
+    let cards = t.deals.map(d => card(d)).join('');
+    if (s.key === 'proposal') {
+      // Show a card mid-drag and the slot it will land in
+      const [first, ...rest] = t.deals;
+      cards = card(first) + '<div class="slot"></div>' + rest.map(d => card(d)).join('');
+    }
+    if (s.key === 'negotiation') {
+      cards = card(t.deals[0], 'dragging') + t.deals.slice(1).map(d => card(d)).join('');
+    }
+    return `<section class="col" style="background:${s.tint}">
+      <div class="col-h">
+        <div class="top"><span class="dot" style="background:${s.fill}"></span><span class="name">${s.name}</span>
+          <span class="count">${t.count}</span><button class="add" title="Add deal"><i data-lucide="plus"></i></button></div>
+        <div class="figs"><div><span>Value</span><b>${money(t.value)}</b></div>${closed ? "" : `<div><span>Expected</span><b>${money(t.expected)}</b></div>`}</div>
+        ${closed ? '<div class="window">Closed in the last 30 days</div>' : ''}
+      </div>
+      ${cards}
+    </section>`;
+  }).join('');
+
+  lucide.createIcons();
+</script>
+</body>
+</html>

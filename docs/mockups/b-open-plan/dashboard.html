@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mockup B Dashboard</title>
+<link rel="stylesheet" href="../shared/tokens.css">
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<script src="../shared/data.js"></script>
+<script src="../shared/charts.js"></script>
+<script>
+  // Figures for the chosen look with the spec's 60 sample deals (REQ-80); the other mockups keep the shared data.
+  MOCK.funnel = [
+    { stage: "new", deals: 54, value: 13200000 },
+    { stage: "qualified", deals: 42, value: 10900000 },
+    { stage: "proposal", deals: 34, value: 9100000 },
+    { stage: "negotiation", deals: 28, value: 7600000 },
+    { stage: "won", deals: 20, value: 4850000 },
+  ];
+  MOCK.recent.push(
+    { type: "note", text: "Prefers a phased rollout across three warehouses", on: "Fleet tracking rollout", when: "11 Nov 15:02" },
+    { type: "email", text: "Sent the security questionnaire back", on: "Naledi Dlamini", when: "10 Nov 08:47" },
+  );
+</script>
+</head>
+<body>
+<aside class="side"><div class="side-inner">
+  <div class="brand"><span class="mark">a</span>Accountable</div>
+  <nav class="nav">
+    <a class="on" href="dashboard.html"><i data-lucide="layout-dashboard"></i>Dashboard</a>
+    <a href="pipeline.html"><i data-lucide="kanban"></i>Pipeline<span class="n">18</span></a>
+    <div class="nav-label">Records</div>
+    <a href="#"><i data-lucide="handshake"></i>Deals<span class="n">60</span></a>
+    <a href="#"><i data-lucide="users"></i>Contacts<span class="n">40</span></a>
+    <a href="#"><i data-lucide="building-2"></i>Organizations<span class="n">15</span></a>
+  </nav>
+  <div class="foot">All amounts in South African rand (ZAR)</div>
+</div></aside>
+
+<main>
+  <div class="head">
+    <div>
+      <div class="eyebrow" id="today"></div>
+      <div class="headline">R2.5 million expected from <em>18 open deals</em></div>
+    </div>
+    <a class="btn" href="#"><i data-lucide="plus"></i>New deal</a>
+  </div>
+
+  <div class="grid">
+    <section class="panel s12 hero">
+      <div>
+        <div class="block">
+          <div class="lbl">Revenue won, last 12 months</div>
+          <div class="big">R5,250,000</div>
+          <div class="line2">22 deals won · 11 lost</div>
+        </div>
+        <div class="block">
+          <div class="lbl">Won this month</div>
+          <div class="mid">R265,000</div>
+          <div class="line2">1 deal · Annual support renewal</div>
+        </div>
+      </div>
+      <div id="line"></div>
+    </section>
+
+    <div class="panel tile s3"><div class="lbl">Open pipeline<span class="ico"><i data-lucide="layers"></i></span></div><div class="fig" id="k-open"></div><div class="note">18 open deals</div></div>
+    <div class="panel tile s3"><div class="lbl">Expected revenue<span class="ico"><i data-lucide="target"></i></span></div><div class="fig" id="k-exp"></div><div class="note">Value × probability of close</div></div>
+    <div class="panel tile s3 alert"><div class="lbl">Late deals<span class="ico"><i data-lucide="clock-alert"></i></span></div><div class="fig">3</div><div class="note">Open past their close date</div></div>
+    <div class="panel tile s3 alert"><div class="lbl">Overdue follow-ups<span class="ico"><i data-lucide="bell-ring"></i></span></div><div class="fig">4</div><div class="note">2 more due today</div></div>
+
+    <section class="panel s12">
+      <div class="ph"><h2>Open pipeline by stage</h2><span class="meta">Width shows value · expected revenue in each block</span></div>
+      <div class="strip" id="strip"></div>
+    </section>
+
+    <section class="panel s7">
+      <div class="ph"><h2>Sales funnel</h2><span class="meta">Value that reached each stage, deals created in the last 12 months</span></div>
+      <div id="funnel"></div>
+    </section>
+
+    <section class="panel s5">
+      <div class="ph"><h2>Deals won and lost</h2>
+        <div class="legend"><span><i style="background:var(--green)"></i>Won</span><span><i style="background:var(--lost)"></i>Lost</span></div>
+      </div>
+      <div id="bars"></div>
+    </section>
+
+    <section class="panel s7">
+      <div class="ph"><h2>Follow-ups</h2><a class="meta" href="#">12 more later</a></div>
+      <div id="fus"></div>
+    </section>
+
+    <section class="panel s5">
+      <div class="ph"><h2>Recent activity</h2><a class="meta" href="#">View all</a></div>
+      <div class="tl" id="recent"></div>
+    </section>
+  </div>
+</main>
+
+<script>
+  const { money, short, stage, columnTotals, lineChart, barChart, typeIcon } = MK;
+  const M = MOCK;
+  document.getElementById('today').textContent = M.today;
+  document.getElementById('k-open').textContent = money(M.kpis.openValue);
+  document.getElementById('k-exp').textContent = money(M.kpis.expected);
+
+  lineChart(document.getElementById('line'), { values: M.revenue, labels: M.months, color: '#073B4C', fillOpacity: 0.05, width: 2.5, height: 290, highlightLast: true, dotFill: '#06D6A0' });
+  barChart(document.getElementById('bars'), { labels: M.months, height: 250, radius: 7, series: [{ values: M.won, color: '#06D6A0' }, { values: M.lost, color: '#8FA3AA' }] });
+
+  const open = ['new', 'qualified', 'proposal', 'negotiation'].map(k => ({ s: stage(k), ...columnTotals(k) }));
+  document.getElementById('strip').innerHTML = open.map(o => {
+    const bg = o.s.key === 'negotiation' ? o.s.badge : o.s.fill;
+    return `<div class="blk" style="flex:${o.value};background:${bg};color:${o.s.on}">
+      <div class="nm"><span>${o.s.name}</span><span class="mono" style="font-weight:500">${o.count} deals</span></div>
+      <div><div class="v">${money(o.value)}</div><div class="x">Expected ${money(o.expected)} at ${o.s.prob}%</div></div>
+    </div>`;
+  }).join('');
+
+  const fmax = M.funnel[0].value;
+  document.getElementById('funnel').innerHTML = M.funnel.map((f, i) => {
+    const s = stage(f.stage);
+    const conv = i ? `<div class="conv">↓ ${Math.round(f.deals / M.funnel[i - 1].deals * 100)}% moved on</div>` : '';
+    return `${conv}<div class="frow"><span class="nm"><i style="background:${s.fill}"></i>${s.name}</span>
+      <div class="track"><span style="width:${f.value / fmax * 100}%;background:${s.fill}"></span></div>
+      <span class="v">${short(f.value)}</span><span class="c">${f.deals} deals</span></div>`;
+  }).join('');
+
+  const task = (f, cls) => `<div class="task"><span class="check"></span>
+    <div><div class="t">${f.text}</div><div class="on">${f.kind === 'deal' ? 'Deal' : 'Contact'} · ${f.on}</div></div>
+    <span class="ty"><i data-lucide="${typeIcon(f.type)}"></i></span><span class="chip ${cls}">${f.date}</span></div>`;
+  document.getElementById('fus').innerHTML = `
+    <div class="group-h overdue">Overdue · 4</div>${M.followups.overdue.map(f => task(f, 'late')).join('')}
+    <div class="group-h">Today · 2</div>${M.followups.today.map(f => task(f, 'today')).join('')}
+    <div class="group-h">Next 7 days · 3</div>${M.followups.week.map(f => task(f, '')).join('')}`;
+
+  document.getElementById('recent').innerHTML = M.recent.map(a => {
+    let text = a.text, dot = '#B5C4C9';
+    if (a.type === 'stage') {
+      const f = stage(a.from), t = stage(a.to); dot = t.fill;
+      text = `<span class="badge" style="background:${f.badge};color:${f.badgeOn}">${f.name}</span> → <span class="badge" style="background:${t.badge};color:${t.badgeOn}">${t.name}</span>`;
+    }
+    const label = { call: 'Call', email: 'Email', note: 'Note', stage: 'Stage change' }[a.type];
+    return `<div class="tl-i" style="--dotc:${dot}"><div class="t">${text}</div>
+      <div class="on">${label} · ${a.on}</div><div class="when">${a.when}</div></div>`;
+  }).join('');
+
+  lucide.createIcons();
+</script>
+</body>
+</html>

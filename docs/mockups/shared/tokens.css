@@ -1,0 +1,41 @@
+/* Brand tokens shared by all three mockups (see docs/spec.md, Design tokens).
+   The mockups load fonts from Google Fonts; the app itself bundles them (spec concern 1). */
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+:root {
+  --bg: #F0F4F5;
+  --panel: #FFFFFF;
+  --ink: #073B4C;
+  --ink-muted: #4F6B75;
+  --mist: #CDD8DB;
+  --green: #06D6A0;
+  --green-text: #05795A;
+  --marigold: #FFC145;
+  --marigold-text: #8A5A00;
+  --coral: #F78C6B;
+  --coral-text: #A8432A;
+  --cerulean: #118AB2;
+  --cerulean-strong: #0E6F90;
+  --raspberry: #EF476F;
+  --raspberry-strong: #C81E4A;
+  --won: #073B4C;
+  --lost: #8FA3AA;
+  --sans: 'Instrument Sans', system-ui, sans-serif;
+  --serif: 'Instrument Serif', Georgia, serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--sans);
+  color: var(--ink);
+  background: var(--bg);
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+.mono { font-family: var(--mono); }
+svg.lucide { width: 18px; height: 18px; stroke-width: 2; flex: none; }
+.chart text { font-family: var(--mono); font-size: 11px; fill: var(--ink-muted); }
