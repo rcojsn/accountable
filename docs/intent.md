@@ -28,7 +28,7 @@ From any contact or deal you can log an activity (a note, call or email) and giv
 
 - **Organization**: a company we do business with. Name, website, industry and notes. An organization has many contacts and many deals.
 - **Contact**: a person we deal with. Name, email, phone, job title, the organization they belong to, and a status (lead, qualified or customer). A lead is a contact with the lead status, so there's no separate list of leads.
-- **Deal**: a potential sale. Name, the organization and the main contact it is with, its stage (New, Qualified, Proposal, Negotiation, Won or Lost), its value in US dollars, its probability of close, and its expected or actual close date. Each stage has a usual probability of close (New 10%, Qualified 25%, Proposal 50%, Negotiation 75%, Won 100%, Lost 0%; these are fixed, not settings), and a deal takes its new stage's probability when it moves; a probability set by hand is kept until the stage changes. When a deal moves to Won or Lost, its close date becomes today, and it can be edited afterwards. Nothing else changes by itself: winning a deal doesn't change the contact's status.
+- **Deal**: a potential sale. Name, the organization and the main contact it is with, its stage (New, Qualified, Proposal, Negotiation, Won or Lost), its value in South African rand (ZAR), its probability of close, and its expected or actual close date. Each stage has a usual probability of close (New 10%, Qualified 25%, Proposal 50%, Negotiation 75%, Won 100%, Lost 0%; these are fixed, not settings), and a deal takes its new stage's probability when it moves; a probability set by hand is kept until the stage changes. When a deal moves to Won or Lost, its close date becomes today, and it can be edited afterwards. Nothing else changes by itself: winning a deal doesn't change the contact's status.
 - **Activity**: something that happened, or needs to happen, with a contact or deal. Type (note, call or email), the contact or deal it relates to, a description and when it happened, and optionally a follow-up date and whether it's done.
 
 To save a record, only these fields are required; everything else is optional:
@@ -59,7 +59,7 @@ The look follows Accountable's brand guidelines (fonts, colors and tone) in the 
 - Every change is kept: it's still there after a browser refresh, and every time the app starts it shows every change made before.
 - One documented command resets the data to the sample data, to start again from scratch.
 - It stays fast with up to about 500 organizations, 2,000 contacts, 1,000 deals and 10,000 activities. At that size, tables can search and sort in the browser; server-side paging isn't needed.
-- Not in the MVP: sign-in, user accounts or several users; a dark mode or a layout for phones; AI features; email, calendar or phone integrations; currencies other than US dollars; reports beyond the dashboard; tags or custom fields; changing the pipeline stages; importing or exporting data.
+- Not in the MVP: sign-in, user accounts or several users; a dark mode or a layout for phones; AI features; email, calendar or phone integrations; currencies other than South African rand (ZAR); reports beyond the dashboard; tags or custom fields; changing the pipeline stages; importing or exporting data.
 
 ## Success criteria
 
